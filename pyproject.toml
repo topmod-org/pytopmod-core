@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytopmod"
+version = "0.1.0"
+authors = [
+  {name = "Davy Risso", email = "davy.risso@gmail.com"},
+]
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pytopmod = ["py.typed"]
