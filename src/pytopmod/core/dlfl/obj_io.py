@@ -1,5 +1,9 @@
 """Conversion functions between OBJ format and DLFL representation."""
+from typing import cast
+
 from pytopmod.core.dlfl.mesh import DLFLMesh
+from pytopmod.core.dlfl.operations import construction
+from pytopmod.core.geometry import Point3D
 from pytopmod.core.vertex import VertexKey
 
 
@@ -24,4 +28,17 @@ def mesh_to_obj(mesh: DLFLMesh) -> str:
 
 
 def obj_to_mesh(obj: str) -> DLFLMesh:
-    raise NotImplementedError()
+    points: list[Point3D] = []
+    faces: list[list[int]] = []
+
+    for line in obj.split("\n"):
+        if line.startswith("v") and line[1].isspace():
+            points.append(
+                cast(
+                    Point3D, tuple(float(coordinate) for coordinate in line[1:].split())
+                )
+            )
+        if line.startswith("f") and line[1].isspace():
+            faces.append([int(index) - 1 for index in line[1:].split()])
+
+    return construction.construct_mesh(points, faces)

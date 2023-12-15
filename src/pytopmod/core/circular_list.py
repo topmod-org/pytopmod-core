@@ -1,7 +1,18 @@
 """Helper functions for operations on circular lists."""
-from typing import Generator, Tuple, TypeVar
+from typing import Generator, Tuple, TypeVar, cast
 
 T = TypeVar("T")
+
+
+def tuples(list_: list[T], length: int) -> Generator[Tuple[T, ...], None, None]:
+    """Returns a generator over tuples of given length in a circular list.
+
+    E.g: tuples([1, 2, 3, 4, 5], 4) => (1, 2, 3, 4), (2, 3, 4, 5), (3, 4, 5, 1), ...
+    """
+    return (
+        tuple(list_[(index + offset) % len(list_)] for offset in range(length))
+        for index in range(len(list_))
+    )
 
 
 def pairs(list_: list[T]) -> Generator[Tuple[T, T], None, None]:
@@ -9,7 +20,15 @@ def pairs(list_: list[T]) -> Generator[Tuple[T, T], None, None]:
 
     E.g: pairs([1, 2, 3]) => (1, 2), (2, 3), (3, 1).
     """
-    return ((item, list_[(index + 1) % len(list_)]) for index, item in enumerate(list_))
+    return cast(Generator[Tuple[T, T], None, None], tuples(list_, 2))
+
+
+def triplets(list_: list[T]) -> Generator[Tuple[T, T, T], None, None]:
+    """Returns a generator over item triplets in a circular list.
+
+    E.g: pairs([1, 2, 3]) => (1, 2, 3), (2, 3, 1), (3, 1, 2).
+    """
+    return cast(Generator[Tuple[T, T, T], None, None], tuples(list_, 2))
 
 
 def circulated_to(list_: list[T], index: int) -> list[T]:
