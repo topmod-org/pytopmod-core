@@ -56,10 +56,9 @@ def construct_mesh(points: list[Point3D], faces: list[list[int]]):
 
             # "If an edge already exists between two vertices it need not be inserted
             # again. If an edge would cause a self-loop it is not inserted."
-            if (
-                vertex_1 == vertex_2
-                or frozenset((vertex_1, vertex_2)) in inserted_edges
-            ):
+            if vertex_1 == vertex_2 or frozenset(
+                (vertex_1, vertex_2)
+            ) in inserted_edges.union(pass_inserted_edges):
                 continue
 
             vertex_1_face: FaceKey | None = None
@@ -144,9 +143,9 @@ def _vertex_rotation_triplets(
     """
     # The first half-edge in a vertex rotation starts with the passed vertex.
     # We circulate the rotation so it starts with a vertex preceding the passed one.
-    # I.e: rotation(v1) = ((v1, v2), f1), ((v2, v1), f2), ((v1, v3), f3), ...
-    #       circulated  = ((v2*, v1), f2), ((v1*, v2, f3)), ((v1, v3*), f3), ...
-    #          triplets = (v2, v1, v3), ...
+    # I.e: rotation(v1) = [((v1, v2), f1), ((v2, v1), f2), ((v1, v3), f3), ...]
+    #       circulated  = [((v2*, v1*), f2), ((v1, v3*, f3)), ..., ((v1, v2), f1)]
+    #          triplets = [(v2, v1, v3), ...]
     for half_edge_1, half_edge_2 in circular_list.pairs(
         circular_list.circulated_to(vertex_rotation, 0)
     ):
