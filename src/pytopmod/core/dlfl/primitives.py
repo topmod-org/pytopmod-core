@@ -7,13 +7,13 @@ def triangle() -> DLFLMesh:
     """Creates and returns a triangle with two faces."""
     mesh = DLFLMesh()
 
-    operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
-    operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
-    operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
+    v_1, f_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
+    v_2, f_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
+    v_3, f_3 = operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
 
-    operators.insert_edge(mesh, "v1", "f1", "v2", "f2")
-    operators.insert_edge(mesh, "v2", "f4", "v3", "f3")
-    operators.insert_edge(mesh, "v3", "f5", "v1", "f5")
+    f_4, _ = operators.insert_edge(mesh, v_1, f_1, v_2, f_2)
+    f_5, _ = operators.insert_edge(mesh, v_2, f_4, v_3, f_3)
+    _, _ = operators.insert_edge(mesh, v_3, f_5, v_1, f_5)
 
     return mesh
 
@@ -22,16 +22,16 @@ def tetrahedron():
     """Creates and returns a tetrahedron."""
     mesh = DLFLMesh()
 
-    operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
-    operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
-    operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
-    operators.create_point_sphere(mesh, (-1.0, -1.0, 1.0))
+    v_1, f_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
+    v_2, f_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
+    v_3, f_3 = operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
+    v_4, f_4 = operators.create_point_sphere(mesh, (-1.0, -1.0, 1.0))
 
-    operators.insert_edge(mesh, "v1", "f1", "v2", "f2")
-    operators.insert_edge(mesh, "v2", "f5", "v3", "f3")
-    operators.insert_edge(mesh, "v3", "f6", "v1", "f6")
-    operators.insert_edge(mesh, "v1", "f7", "v4", "f4")
-    operators.insert_edge(mesh, "v4", "f9", "v2", "f9")
-    operators.insert_edge(mesh, "v4", "f10", "v3", "f10")
+    f_5, _ = operators.insert_edge(mesh, v_1, f_1, v_2, f_2)
+    f_6, _ = operators.insert_edge(mesh, v_2, f_5, v_3, f_3)
+    f_7, _ = operators.insert_edge(mesh, v_3, f_6, v_1, f_6)
+    f_9, _ = operators.insert_edge(mesh, v_1, f_7, v_4, f_4)
+    f_10, _ = operators.insert_edge(mesh, v_4, f_9, v_2, f_9)
+    _, _ = operators.insert_edge(mesh, v_4, f_10, v_3, f_10)
 
     return mesh
