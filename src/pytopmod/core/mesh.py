@@ -14,26 +14,26 @@ class Mesh:
     Also exposes a vertex coordinates map.
     """
 
-    vertices: KeyStore[VertexKey] = dataclasses.field(init=False)
-    faces: KeyStore[FaceKey] = dataclasses.field(init=False)
+    vertex_keys: KeyStore[VertexKey] = dataclasses.field(init=False)
+    face_keys: KeyStore[FaceKey] = dataclasses.field(init=False)
     vertex_coordinates: dict[VertexKey, Point3D] = dataclasses.field(init=False)
 
     def __post_init__(self):
-        self.vertices = KeyStore[VertexKey]("v")
-        self.faces = KeyStore[VertexKey]("f")
+        self.vertex_keys = KeyStore[VertexKey]("v")
+        self.face_keys = KeyStore[VertexKey]("f")
         self.vertex_coordinates = {}
 
     def create_vertex(self, position: Point3D) -> VertexKey:
-        vertex = self.vertices.new()
-        self.vertex_coordinates[vertex] = position
-        return vertex
+        vertex_key = self.vertex_keys.new()
+        self.vertex_coordinates[vertex_key] = position
+        return vertex_key
 
-    def delete_vertex(self, vertex: VertexKey):
-        self.vertices.delete(vertex)
-        del self.vertex_coordinates[vertex]
+    def delete_vertex(self, vertex_key: VertexKey):
+        self.vertex_keys.delete(vertex_key)
+        del self.vertex_coordinates[vertex_key]
 
     def create_face(self) -> FaceKey:
-        return self.faces.new()
+        return self.face_keys.new()
 
-    def delete_face(self, face: FaceKey):
-        return self.faces.delete(face)
+    def delete_face(self, face_key: FaceKey):
+        return self.face_keys.delete(face_key)
