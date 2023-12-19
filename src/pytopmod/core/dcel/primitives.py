@@ -47,3 +47,21 @@ def square() -> dcel_mesh.Mesh:
     mesh.create_edge(v_4, v_1, f_1, f_2, "e3", "e1")
 
     return mesh
+
+
+def triangle() -> dcel_mesh.Mesh:
+    mesh = dcel_mesh.Mesh()
+
+    v_1, v_2, v_3 = (
+        mesh.create_vertex((1.0, 1.0, 1.0)),
+        mesh.create_vertex((1.0, -1.0, -1.0)),
+        mesh.create_vertex((-1.0, 1.0, -1.0)),
+    )
+
+    f_1, f_2 = (mesh.create_face(), mesh.create_face())
+
+    mesh.create_edge(v_1, v_2, f_1, f_2, "e3", "e2")
+    mesh.create_edge(v_2, v_3, f_1, f_2, "e1", "e3")
+    mesh.create_edge(v_3, v_1, f_1, f_2, "e2", "e1")
+
+    return mesh
