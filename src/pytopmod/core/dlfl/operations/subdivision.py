@@ -2,15 +2,15 @@
 from typing import Tuple, cast
 
 from pytopmod.core import geometry
+from pytopmod.core.dlfl import mesh as dlfl_mesh
 from pytopmod.core.dlfl import operators
-from pytopmod.core.dlfl.mesh import DLFLMesh
 from pytopmod.core.face import FaceKey
 from pytopmod.core.geometry import Point3D
 from pytopmod.core.vertex import VertexKey
 
 
 def subdivide_edge(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     face_1_key: FaceKey,
     vertex_2_key: VertexKey,
@@ -55,7 +55,7 @@ def subdivide_edge(
 
 
 def triangulate_face(
-    mesh: DLFLMesh, face_key: FaceKey
+    mesh: dlfl_mesh.Mesh, face_key: FaceKey
 ) -> Tuple[VertexKey, set[FaceKey]]:
     """Performs a triangular subdivision of a face from its centroid.
 

@@ -1,11 +1,11 @@
 """Convenience functions to create primitive DLFL Meshes."""
+from pytopmod.core.dlfl import mesh as dlfl_mesh
 from pytopmod.core.dlfl import operators
-from pytopmod.core.dlfl.mesh import DLFLMesh
 
 
-def triangle() -> DLFLMesh:
+def triangle() -> dlfl_mesh.Mesh:
     """Creates and returns a triangle with two faces."""
-    mesh = DLFLMesh()
+    mesh = dlfl_mesh.Mesh()
 
     v_1, f_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
     v_2, f_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
@@ -20,7 +20,7 @@ def triangle() -> DLFLMesh:
 
 def tetrahedron():
     """Creates and returns a tetrahedron."""
-    mesh = DLFLMesh()
+    mesh = dlfl_mesh.Mesh()
 
     v_1, f_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
     v_2, f_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
