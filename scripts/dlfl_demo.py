@@ -12,9 +12,9 @@ def main():
 
     print("Subdividing tetrahedron...")
     for _ in range(10):
-        for face in list(mesh.faces):
-            subdivision.triangulate_face(mesh, face)
-    print(f"Done. Faces={len(mesh.faces):_}, Vertices={len(mesh.vertices):_}")
+        for face_key in list(mesh.face_keys):
+            subdivision.triangulate_face(mesh, face_key)
+    print(f"Done. Faces={len(mesh.face_keys):_}, Vertices={len(mesh.vertex_keys):_}")
     with open("dlfl_tetrahedron_subdivided.obj", "w", encoding="utf-8") as f:
         f.write(obj_io.mesh_to_obj(mesh))
 
