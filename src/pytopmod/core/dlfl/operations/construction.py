@@ -56,9 +56,10 @@ def construct_mesh(points: list[Point3D], faces: list[list[int]]):
 
             # "If an edge already exists between two vertices it need not be inserted
             # again. If an edge would cause a self-loop it is not inserted."
-            if vertex_1 == vertex_2 or frozenset(
-                (vertex_1, vertex_2)
-            ) in inserted_edges.union(pass_inserted_edges):
+            if vertex_1 == vertex_2 or (
+                frozenset((vertex_1, vertex_2))
+                in inserted_edges.union(pass_inserted_edges)
+            ):
                 continue
 
             vertex_1_face: FaceKey | None = None
