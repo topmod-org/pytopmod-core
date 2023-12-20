@@ -27,19 +27,19 @@ class DLFLMesh(Mesh):
     )
 
     def create_vertex(self, position: Point3D) -> VertexKey:
-        vertex = super(DLFLMesh, self).create_vertex(position)
-        self.vertex_faces[vertex] = set()
-        return vertex
+        vertex_key = super(DLFLMesh, self).create_vertex(position)
+        self.vertex_faces[vertex_key] = set()
+        return vertex_key
 
-    def delete_vertex(self, vertex: VertexKey):
-        super(DLFLMesh, self).delete_vertex(vertex)
-        del self.vertex_faces[vertex]
+    def delete_vertex(self, vertex_key: VertexKey):
+        super(DLFLMesh, self).delete_vertex(vertex_key)
+        del self.vertex_faces[vertex_key]
 
     def create_face(self) -> FaceKey:
-        face = super(DLFLMesh, self).create_face()
-        self.face_vertices[face] = []
-        return face
+        face_key = super(DLFLMesh, self).create_face()
+        self.face_vertices[face_key] = []
+        return face_key
 
-    def delete_face(self, face: FaceKey):
-        super(DLFLMesh, self).delete_face(face)
-        del self.face_vertices[face]
+    def delete_face(self, face_key: FaceKey):
+        super(DLFLMesh, self).delete_face(face_key)
+        del self.face_vertices[face_key]

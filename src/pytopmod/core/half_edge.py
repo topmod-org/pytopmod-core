@@ -9,5 +9,5 @@ from pytopmod.core.vertex import VertexKey
 class HalfEdge:
     """Convenience data class for representing a half-edge."""
 
-    vertices: Tuple[VertexKey, VertexKey]
-    face: FaceKey
+    vertex_keys: Tuple[VertexKey, VertexKey]
+    face_key: FaceKey
