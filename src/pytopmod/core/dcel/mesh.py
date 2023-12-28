@@ -16,8 +16,8 @@ class EdgeNode:
     vertex_2_key: VertexKey
     face_1_key: FaceKey
     face_2_key: FaceKey
-    vertex_1_next_key: EdgeKey
-    vertex_2_next_key: EdgeKey
+    edge_1_key: EdgeKey
+    edge_2_key: EdgeKey
 
     def __repr__(self) -> str:
         return dataclasses.astuple(self).__repr__()
@@ -46,8 +46,8 @@ class Mesh(base_mesh.Mesh):
         vertex_2_key: VertexKey,
         face_1_key: FaceKey,
         face_2_key: FaceKey,
-        vertex_1_next_key: EdgeKey,
-        vertex_2_next_key: EdgeKey,
+        edge_1_key: EdgeKey,
+        edge_2_key: EdgeKey,
     ) -> EdgeKey:
         edge_key = self.edge_keys.new()
         self.edge_nodes[edge_key] = EdgeNode(
@@ -55,8 +55,8 @@ class Mesh(base_mesh.Mesh):
             vertex_2_key,
             face_1_key,
             face_2_key,
-            vertex_1_next_key,
-            vertex_2_next_key,
+            edge_1_key,
+            edge_2_key,
         )
         return edge_key
 

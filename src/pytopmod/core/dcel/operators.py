@@ -23,18 +23,18 @@ def vertex_trace(
 
     edge_node = mesh.edge_nodes[start_edge_key]
     edge_key = (
-        edge_node.vertex_1_next_key
+        edge_node.edge_1_key
         if edge_node.vertex_1_key == vertex_key
-        else edge_node.vertex_2_next_key
+        else edge_node.edge_2_key
     )
 
     while edge_key != start_edge_key:
         yield edge_key
         edge_node = mesh.edge_nodes[edge_key]
         edge_key = (
-            edge_node.vertex_1_next_key
+            edge_node.edge_1_key
             if edge_node.vertex_1_key == vertex_key
-            else edge_node.vertex_2_next_key
+            else edge_node.edge_2_key
         )
 
 
@@ -50,18 +50,18 @@ def face_trace(
 
     edge_node = mesh.edge_nodes[start_edge_key]
     edge_key = (
-        edge_node.vertex_1_next_key
+        edge_node.edge_1_key
         if edge_node.face_1_key == face_key
-        else edge_node.vertex_2_next_key
+        else edge_node.edge_2_key
     )
 
     while edge_key != start_edge_key:
         yield edge_key
         edge_node = mesh.edge_nodes[edge_key]
         edge_key = (
-            edge_node.vertex_1_next_key
+            edge_node.edge_1_key
             if edge_node.face_1_key == face_key
-            else edge_node.vertex_2_next_key
+            else edge_node.edge_2_key
         )
 
 
@@ -83,14 +83,14 @@ def insert_edge(
 
     # 1.1 - Find the 2nd edges for each corner.
     edge_1_2_key = (
-        edge_1_node.vertex_1_next_key
+        edge_1_node.edge_1_key
         if edge_1_node.vertex_1_key == vertex_1_key
-        else edge_1_node.vertex_2_next_key
+        else edge_1_node.edge_2_key
     )
     edge_2_2_key = (
-        edge_2_node.vertex_1_next_key
+        edge_2_node.edge_1_key
         if edge_2_node.vertex_1_key == vertex_2_key
-        else edge_2_node.vertex_2_next_key
+        else edge_2_node.edge_2_key
     )
 
     # 1.2 - Find the faces that contain each corner.
@@ -135,25 +135,25 @@ def insert_edge(
 
         # 3.2 - Update the edge information.
         if edge_1_node.vertex_1_key == vertex_1_key:
-            edge_1_node.vertex_1_next_key = new_edge_key
+            edge_1_node.edge_1_key = new_edge_key
         else:
-            edge_1_node.vertex_2_next_key = new_edge_key
+            edge_1_node.edge_2_key = new_edge_key
         if edge_2_node.vertex_1_key == vertex_2_key:
-            edge_2_node.vertex_1_next_key = new_edge_key
+            edge_2_node.edge_1_key = new_edge_key
         else:
-            edge_2_node.vertex_2_next_key = new_edge_key
+            edge_2_node.edge_2_key = new_edge_key
 
     # Cofacial insertion.
     else:
         # 4.1 - Update the edge information.
         if edge_1_node.vertex_1_key == vertex_1_key:
-            edge_1_node.vertex_1_next_key = new_edge_key
+            edge_1_node.edge_1_key = new_edge_key
         else:
-            edge_1_node.vertex_2_next_key = new_edge_key
+            edge_1_node.edge_2_key = new_edge_key
         if edge_2_node.vertex_1_key == vertex_2_key:
-            edge_2_node.vertex_1_next_key = new_edge_key
+            edge_2_node.edge_1_key = new_edge_key
         else:
-            edge_2_node.vertex_2_next_key = new_edge_key
+            edge_2_node.edge_2_key = new_edge_key
 
         # 4.2 - Update the face information.
         # Create two new faces.
@@ -220,13 +220,13 @@ def delete_edge(mesh: dcel_mesh.Mesh, old_edge: EdgeKey):
 
         # 2.2 - Update the edge information to delete the edge.
         if vertex_1_previous_node.vertex_1_key == old_edge_node.vertex_1_key:
-            vertex_1_previous_node.vertex_1_next_key = vertex_1_next_key
+            vertex_1_previous_node.edge_1_key = vertex_1_next_key
         else:
-            vertex_1_previous_node.vertex_2_next_key = vertex_1_next_key
+            vertex_1_previous_node.edge_2_key = vertex_1_next_key
         if vertex_2_previous_node.vertex_1_key == old_edge_node.vertex_2_key:
-            vertex_2_previous_node.vertex_1_next_key = vertex_2_next_key
+            vertex_2_previous_node.edge_1_key = vertex_2_next_key
         else:
-            vertex_2_previous_node.vertex_2_next_key = vertex_2_next_key
+            vertex_2_previous_node.edge_2_key = vertex_2_next_key
 
         # Delete the edge.
         mesh.delete_edge(old_edge)
@@ -235,13 +235,13 @@ def delete_edge(mesh: dcel_mesh.Mesh, old_edge: EdgeKey):
     else:
         # 3.1 - Update the edge information to delete the edge.
         if vertex_1_previous_node.vertex_1_key == old_edge_node.vertex_1_key:
-            vertex_1_previous_node.vertex_1_next_key = vertex_1_next_key
+            vertex_1_previous_node.edge_1_key = vertex_1_next_key
         else:
-            vertex_1_previous_node.vertex_2_next_key = vertex_1_next_key
+            vertex_1_previous_node.edge_2_key = vertex_1_next_key
         if vertex_2_previous_node.vertex_1_key == old_edge_node.vertex_2_key:
-            vertex_2_previous_node.vertex_1_next_key = vertex_2_next_key
+            vertex_2_previous_node.edge_1_key = vertex_2_next_key
         else:
-            vertex_2_previous_node.vertex_2_next_key = vertex_2_next_key
+            vertex_2_previous_node.edge_2_key = vertex_2_next_key
 
         # Delete the edge.
         mesh.delete_edge(old_edge)
