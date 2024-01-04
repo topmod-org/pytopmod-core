@@ -1,10 +1,10 @@
 """Conversion functions between OBJ format and DLFL representation."""
-from pytopmod.core.dlfl.mesh import DLFLMesh
+from pytopmod.core.dlfl import mesh as dlfl_mesh
 from pytopmod.core.vertex import VertexKey
 
 
-def mesh_to_obj(mesh: DLFLMesh) -> str:
-    """Converts a DLFLMesh to OBJ format."""
+def mesh_to_obj(mesh: dlfl_mesh.Mesh) -> str:
+    """Converts a dlfl_mesh.Mesh to OBJ format."""
     vertex_index_map: dict[VertexKey, int] = {}
 
     obj_vertices: list[str] = []
@@ -24,5 +24,5 @@ def mesh_to_obj(mesh: DLFLMesh) -> str:
     return "\n".join(obj_vertices) + "\n" + "\n".join(obj_faces)
 
 
-def obj_to_mesh(obj: str) -> DLFLMesh:
+def obj_to_mesh(obj: str) -> dlfl_mesh.Mesh:
     raise NotImplementedError()

@@ -2,14 +2,16 @@
 from typing import Generator, Tuple
 
 from pytopmod.core import circular_list
-from pytopmod.core.dlfl.mesh import DLFLMesh
+from pytopmod.core.dlfl import mesh as dlfl_mesh
 from pytopmod.core.face import FaceKey
 from pytopmod.core.geometry import Point3D
 from pytopmod.core.half_edge import HalfEdge
 from pytopmod.core.vertex import VertexKey
 
 
-def face_trace(mesh: DLFLMesh, face_key: FaceKey) -> Generator[HalfEdge, None, None]:
+def face_trace(
+    mesh: dlfl_mesh.Mesh, face_key: FaceKey
+) -> Generator[HalfEdge, None, None]:
     """Returns a generator over the half-edges of a face boundary."""
     # Simply form half-edges from the pairs of vertices in a face boundary.
     return (
@@ -19,7 +21,7 @@ def face_trace(mesh: DLFLMesh, face_key: FaceKey) -> Generator[HalfEdge, None, N
 
 
 def vertex_trace(
-    mesh: DLFLMesh, vertex_key: VertexKey
+    mesh: dlfl_mesh.Mesh, vertex_key: VertexKey
 ) -> Generator[HalfEdge, None, None]:
     """Returns a generator over the half-edges of a vertex rotation."""
     # Pick a first face in the set of the vertex's faces rotation.
@@ -77,7 +79,9 @@ def vertex_trace(
             )
 
 
-def create_point_sphere(mesh: DLFLMesh, position: Point3D) -> Tuple[VertexKey, FaceKey]:
+def create_point_sphere(
+    mesh: dlfl_mesh.Mesh, position: Point3D
+) -> Tuple[VertexKey, FaceKey]:
     """Creates a point-sphere in the passed mesh.
 
     Creates a face and a vertex at the passed position, set the vertex as the
@@ -92,7 +96,7 @@ def create_point_sphere(mesh: DLFLMesh, position: Point3D) -> Tuple[VertexKey, F
 
 
 def insert_edge(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     face_1_key: FaceKey,
     vertex_2_key: VertexKey,
@@ -110,7 +114,7 @@ def insert_edge(
 
 
 def _insert_edge_cofacial(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     old_face_key: FaceKey,
     vertex_2_key: VertexKey,
@@ -155,7 +159,7 @@ def _insert_edge_cofacial(
 
 
 def _insert_edge_non_cofacial(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     old_face_1: FaceKey,
     vertex_2_key: VertexKey,
@@ -202,7 +206,7 @@ def _insert_edge_non_cofacial(
 
 
 def delete_edge(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     face_1_key: FaceKey,
     vertex_2_key: VertexKey,
@@ -220,7 +224,7 @@ def delete_edge(
 
 
 def _delete_edge_cofacial(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     old_face_key: FaceKey,
     vertex_2_key: VertexKey,
@@ -266,7 +270,7 @@ def _delete_edge_cofacial(
 
 
 def _delete_edge_non_cofacial(
-    mesh: DLFLMesh,
+    mesh: dlfl_mesh.Mesh,
     vertex_1_key: VertexKey,
     old_face_1: FaceKey,
     vertex_2_key: VertexKey,
