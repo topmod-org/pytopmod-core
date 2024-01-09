@@ -1,5 +1,5 @@
 """Manifold-preserving operators on DCEL Meshes."""
-from typing import Generator, Optional
+from typing import Generator, Optional, Tuple
 
 from pytopmod.core import circular_list, corner
 from pytopmod.core.dcel import mesh as dcel_mesh
@@ -37,46 +37,57 @@ def corner_from_face_vertex(
     mesh: dcel_mesh.Mesh, face_key: FaceKey, vertex_key: VertexKey
 ) -> corner.Corner:
     """Returns the corner defined by a face and a vertex."""
-    for edge_key in vertex_trace(mesh, vertex_key):
-        edge_node = mesh.edge_nodes[edge_key]
-        if edge_node.face_1_key == face_key:
-            return corner_from_edge_vertex(mesh, edge_key, edge_node.vertex_1_key)
-        if edge_node.face_2_key == face_key:
-            return corner_from_edge_vertex(mesh, edge_key, edge_node.vertex_2_key)
+    for rotation_corner in vertex_trace(mesh, vertex_key):
+        if rotation_corner.face_key == face_key:
+            return rotation_corner
 
     raise ValueError(f"Vertex {vertex_key} is not in face {face_key}.")
+
+
+def corner_from_face_edge(
+    mesh: dcel_mesh.Mesh, face_key: FaceKey, edge_key: EdgeKey
+) -> corner.Corner:
+    """Returns the corner defined by a face and an edge."""
+    edge_node = mesh.edge_nodes[edge_key]
+    vertex_key = (
+        edge_node.vertex_1_key
+        if edge_node.face_1_key == face_key
+        else edge_node.vertex_2_key
+    )
+    return corner_from_edge_vertex(mesh, edge_key, vertex_key)
 
 
 def vertex_trace(
     mesh: dcel_mesh.Mesh,
     vertex_key: VertexKey,
     start_edge_key: Optional[EdgeKey] = None,
-) -> Generator[EdgeKey, None, None]:
-    """Returns a generator over the edges that form a vertex rotation.
+) -> Generator[corner.Corner, None, None]:
+    """Returns a generator over the corners that form a vertex rotation.
 
     The starting edge can optionally be specified, otherwise one will be picked.
     """
     start_corner = corner_from_edge_vertex(
         mesh, start_edge_key or next(mesh.vertex_edges(vertex_key)), vertex_key
     )
-    yield start_corner.edge_1_key
+    yield start_corner
 
     corner = corner_from_edge_vertex(mesh, start_corner.edge_2_key, vertex_key)
 
     while corner != start_corner:
-        yield corner.edge_1_key
+        yield corner
         corner = corner_from_edge_vertex(mesh, corner.edge_2_key, vertex_key)
 
 
 def face_trace(
     mesh: dcel_mesh.Mesh, face_key: FaceKey, start_edge_key: Optional[EdgeKey] = None
-) -> Generator[EdgeKey, None, None]:
-    """Returns a generator over the edges that form a face boundary.
+) -> Generator[corner.Corner, None, None]:
+    """Returns a generator over the corners that form a face boundary.
 
     The starting edge can optionally be specified, otherwise one will be picked.
     """
     start_edge_key = start_edge_key or next(mesh.face_edges(face_key))
-    yield start_edge_key
+    start_corner = corner_from_face_edge(mesh, face_key, start_edge_key)
+    yield start_corner
 
     edge_node = mesh.edge_nodes[start_edge_key]
     edge_key = (
@@ -86,7 +97,7 @@ def face_trace(
     )
 
     while edge_key != start_edge_key:
-        yield edge_key
+        yield corner_from_face_edge(mesh, face_key, edge_key)
         edge_node = mesh.edge_nodes[edge_key]
         edge_key = (
             edge_node.next_edge_1_key
@@ -122,8 +133,8 @@ def _replace_face(
     start_edge_key: Optional[EdgeKey] = None,
 ):
     """Replaces a face by another one in a mesh."""
-    for edge_key in list(face_trace(mesh, old_face_key, start_edge_key)):
-        edge_node = mesh.edge_nodes[edge_key]
+    for face_corner in list(face_trace(mesh, old_face_key, start_edge_key)):
+        edge_node = mesh.edge_nodes[face_corner.edge_1_key]
         if edge_node.face_1_key == old_face_key:
             edge_node.face_1_key = new_face_key
         if edge_node.face_2_key == old_face_key:
@@ -131,27 +142,21 @@ def _replace_face(
 
 
 def insert_edge(
-    mesh: dcel_mesh.Mesh,
-    vertex_1_key: VertexKey,
-    edge_1_key: EdgeKey,
-    vertex_2_key: VertexKey,
-    edge_2_key: EdgeKey,
-):
+    mesh: dcel_mesh.Mesh, corner_1: corner.Corner, corner_2: corner.Corner
+) -> Tuple[FaceKey, FaceKey]:
     """Inserts an edge between two corners.
 
     If the two corners:
       - belong to the same face, the face will be split into two new ones.
       - belong to two different faces, the faces will be merged into a new one.
     """
-    corner_1 = corner_from_edge_vertex(mesh, edge_1_key, vertex_1_key)
-    corner_2 = corner_from_edge_vertex(mesh, edge_2_key, vertex_2_key)
 
     # Set the vertex and edge information for the new edge.
     # 2 - Create a new edge node.
-    new_edge_key = mesh.create_edge(vertex_1_key, vertex_2_key)
+    new_edge_key = mesh.create_edge(corner_1.vertex_key, corner_2.vertex_key)
     new_edge_node = mesh.create_edge_node(
-        vertex_1_key,
-        vertex_2_key,
+        corner_1.vertex_key,
+        corner_2.vertex_key,
         corner_1.face_key,
         corner_2.face_key,
         corner_1.edge_2_key,
@@ -181,6 +186,8 @@ def insert_edge(
         _update_next_edge(mesh, corner_1.edge_1_key, corner_1.vertex_key, new_edge_key)
         _update_next_edge(mesh, corner_2.edge_1_key, corner_2.vertex_key, new_edge_key)
 
+        return (new_face_key, new_face_key)
+
     # Cofacial insertion.
     else:
         face_key = corner_1.face_key
@@ -202,21 +209,34 @@ def insert_edge(
         # Delete face_1 == face_2.
         mesh.delete_face(face_key)
 
+        return (new_face_1_key, new_face_2_key)
 
-def delete_edge(mesh: dcel_mesh.Mesh, old_edge: EdgeKey):
-    old_edge_node = mesh.edge_nodes[old_edge]
 
-    corner_1 = corner_from_edge_vertex(mesh, old_edge, old_edge_node.vertex_1_key)
-    corner_2 = corner_from_edge_vertex(mesh, old_edge, old_edge_node.vertex_2_key)
+def delete_edge(
+    mesh: dcel_mesh.Mesh, corner_1: corner.Corner, corner_2: corner.Corner
+) -> Tuple[FaceKey, FaceKey]:
+    old_edge_key = EdgeKey(frozenset([corner_1.vertex_key, corner_2.vertex_key]))
+    old_edge_node = mesh.edge_nodes[old_edge_key]
+
+    corner_1 = corner_from_edge_vertex(mesh, old_edge_key, old_edge_node.vertex_1_key)
+    corner_2 = corner_from_edge_vertex(mesh, old_edge_key, old_edge_node.vertex_2_key)
 
     # 1.1 - Find the edge before the old edge in the rotation of vertex_1.
     vertex_1_previous_edge_key = circular_list.previous_item(
-        list(vertex_trace(mesh, corner_1.vertex_key)), old_edge
+        [
+            rotation_corner.edge_1_key
+            for rotation_corner in vertex_trace(mesh, corner_1.vertex_key)
+        ],
+        old_edge_key,
     )
 
     # 1.2 - Find the edge before the old edge in the rotation of vertex_2.
     vertex_2_previous_edge_key = circular_list.previous_item(
-        list(vertex_trace(mesh, corner_2.vertex_key)), old_edge
+        [
+            rotation_corner.edge_1_key
+            for rotation_corner in vertex_trace(mesh, corner_2.vertex_key)
+        ],
+        old_edge_key,
     )
 
     # 2 - Non-cofacial deletion.
@@ -242,7 +262,9 @@ def delete_edge(mesh: dcel_mesh.Mesh, old_edge: EdgeKey):
         )
 
         # Delete the edge.
-        mesh.delete_edge(old_edge)
+        mesh.delete_edge(old_edge_key)
+
+        return (new_face_key, new_face_key)
 
     # 3 - Cofacial deletion.
     else:
@@ -257,7 +279,7 @@ def delete_edge(mesh: dcel_mesh.Mesh, old_edge: EdgeKey):
         )
 
         # Delete the edge.
-        mesh.delete_edge(old_edge)
+        mesh.delete_edge(old_edge_key)
 
         # 3.2 - Update the face information.
         # Create two new faces.
@@ -274,3 +296,5 @@ def delete_edge(mesh: dcel_mesh.Mesh, old_edge: EdgeKey):
 
         # Delete face_1 == face_2.
         mesh.delete_face(face_key)
+
+        return (new_face_1_key, new_face_2_key)

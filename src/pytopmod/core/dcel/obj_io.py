@@ -18,7 +18,9 @@ def mesh_to_obj(mesh: dcel_mesh.Mesh) -> str:
 
     obj_faces: list[str] = []
     for face_key in mesh.face_keys:
-        edge_keys = list(operators.face_trace(mesh, face_key))
+        edge_keys = [
+            corner.edge_1_key for corner in operators.face_trace(mesh, face_key)
+        ]
         vertex_key_pairs: list[Tuple[VertexKey, VertexKey]] = []
 
         for i in range(len(edge_keys) - 1):
