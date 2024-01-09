@@ -1,7 +1,6 @@
 import dataclasses
 from typing import Generator
 
-from pytopmod.core import keystore
 from pytopmod.core import mesh as base_mesh
 from pytopmod.core.edge import EdgeKey
 from pytopmod.core.face import FaceKey
@@ -32,15 +31,9 @@ class Mesh(base_mesh.Mesh):
     Manifold-preserving operators are implemented in 'operators.py'.
     """
 
-    edge_keys: keystore.KeyStore[EdgeKey] = dataclasses.field(init=False)
-    edge_nodes: dict[EdgeKey, EdgeNode] = dataclasses.field(init=False)
+    edge_nodes: dict[EdgeKey, EdgeNode] = dataclasses.field(default_factory=dict)
 
-    def __post_init__(self):
-        super(Mesh, self).__post_init__()
-        self.edge_keys = keystore.KeyStore[EdgeKey]("e")
-        self.edge_nodes = {}
-
-    def create_edge(
+    def create_edge_node(
         self,
         vertex_1_key: VertexKey,
         vertex_2_key: VertexKey,
@@ -48,9 +41,9 @@ class Mesh(base_mesh.Mesh):
         face_2_key: FaceKey,
         next_edge_1_key: EdgeKey,
         next_edge_2_key: EdgeKey,
-    ) -> EdgeKey:
-        edge_key = self.edge_keys.new()
-        self.edge_nodes[edge_key] = EdgeNode(
+    ) -> EdgeNode:
+        edge_key = EdgeKey(frozenset([vertex_1_key, vertex_2_key]))
+        edge_node = EdgeNode(
             vertex_1_key,
             vertex_2_key,
             face_1_key,
@@ -58,11 +51,12 @@ class Mesh(base_mesh.Mesh):
             next_edge_1_key,
             next_edge_2_key,
         )
-        return edge_key
+        self.edge_nodes[edge_key] = edge_node
+        return edge_node
 
     def delete_edge(self, edge_key: EdgeKey):
-        del self.edge_nodes[edge_key]
-        return self.edge_keys.delete(edge_key)
+        self.edge_nodes.pop(edge_key)
+        return self.edge_keys.remove(edge_key)
 
     def vertex_edges(self, vertex_key: VertexKey) -> Generator[EdgeKey, None, None]:
         """Returns a generator over the edges incident to a vertex."""

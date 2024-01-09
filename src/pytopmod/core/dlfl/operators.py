@@ -7,6 +7,7 @@ from pytopmod.core.face import FaceKey
 from pytopmod.core.geometry import Point3D
 from pytopmod.core.half_edge import HalfEdge
 from pytopmod.core.vertex import VertexKey
+from pytopmod.core.edge import EdgeKey
 
 
 def face_trace(
@@ -92,6 +93,7 @@ def create_point_sphere(
     face_key = mesh.create_face()
     mesh.face_vertices[face_key].append(vertex_key)
     mesh.vertex_faces[vertex_key].add(face_key)
+    mesh.create_edge(vertex_key, vertex_key)
     return (vertex_key, face_key)
 
 
@@ -155,6 +157,9 @@ def _insert_edge_cofacial(
     # Delete the old face.
     mesh.delete_face(old_face_key)
 
+    # Create the edge.
+    mesh.create_edge(vertex_1_key, vertex_2_key)
+
     return (new_face_1_key, new_face_2_key)
 
 
@@ -201,6 +206,9 @@ def _insert_edge_non_cofacial(
     # Delete the old faces.
     mesh.delete_face(old_face_1)
     mesh.delete_face(old_face_2)
+
+    # Create the edge.
+    mesh.create_edge(vertex_1_key, vertex_2_key)
 
     return (new_face_key, new_face_key)
 
@@ -266,6 +274,9 @@ def _delete_edge_cofacial(
     # Delete the old face.
     mesh.delete_face(old_face_key)
 
+    # Delete the edge.
+    mesh.delete_edge(EdgeKey(frozenset((vertex_1_key, vertex_2_key))))
+
     return (new_face_1_key, new_face_2_key)
 
 
@@ -304,7 +315,11 @@ def _delete_edge_non_cofacial(
         mesh.vertex_faces[vertex_key].discard(old_face_2)
         mesh.vertex_faces[vertex_key].add(new_face_key)
 
+    # Delete the old faces.
     mesh.delete_face(old_face_1)
     mesh.delete_face(old_face_2)
+
+    # Delete the edge.
+    mesh.delete_edge(EdgeKey(frozenset((vertex_1_key, vertex_2_key))))
 
     return (new_face_key, new_face_key)

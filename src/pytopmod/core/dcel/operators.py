@@ -148,7 +148,8 @@ def insert_edge(
 
     # Set the vertex and edge information for the new edge.
     # 2 - Create a new edge node.
-    new_edge_key = mesh.create_edge(
+    new_edge_key = mesh.create_edge(vertex_1_key, vertex_2_key)
+    new_edge_node = mesh.create_edge_node(
         vertex_1_key,
         vertex_2_key,
         corner_1.face_key,
@@ -156,7 +157,6 @@ def insert_edge(
         corner_1.edge_2_key,
         corner_2.edge_2_key,
     )
-    new_edge_node = mesh.edge_nodes[new_edge_key]
 
     # Non-cofacial insertion.
     if corner_1.face_key != corner_2.face_key:

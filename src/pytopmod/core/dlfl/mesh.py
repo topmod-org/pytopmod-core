@@ -19,12 +19,13 @@ class Mesh(base_mesh.Mesh):
     Manifold-preserving operators are implemented in 'operators.py'.
     """
 
-    face_vertices: dict[FaceKey, list[VertexKey]] = dataclasses.field(
-        default_factory=dict
-    )
-    vertex_faces: dict[VertexKey, set[FaceKey]] = dataclasses.field(
-        default_factory=dict
-    )
+    face_vertices: dict[FaceKey, list[VertexKey]] = dataclasses.field(init=False)
+    vertex_faces: dict[VertexKey, set[FaceKey]] = dataclasses.field(init=False)
+
+    def __post_init__(self):
+        super(Mesh, self).__post_init__()
+        self.face_vertices = dict()
+        self.vertex_faces = dict()
 
     def create_vertex(self, position: Point3D) -> VertexKey:
         vertex_key = super(Mesh, self).create_vertex(position)
@@ -33,7 +34,7 @@ class Mesh(base_mesh.Mesh):
 
     def delete_vertex(self, vertex_key: VertexKey):
         super(Mesh, self).delete_vertex(vertex_key)
-        del self.vertex_faces[vertex_key]
+        self.vertex_faces.pop(vertex_key)
 
     def create_face(self) -> FaceKey:
         face_key = super(Mesh, self).create_face()
@@ -42,4 +43,4 @@ class Mesh(base_mesh.Mesh):
 
     def delete_face(self, face_key: FaceKey):
         super(Mesh, self).delete_face(face_key)
-        del self.face_vertices[face_key]
+        self.face_vertices.pop(face_key)
