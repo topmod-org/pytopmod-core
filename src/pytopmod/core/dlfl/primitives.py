@@ -7,13 +7,21 @@ def triangle() -> dlfl_mesh.Mesh:
     """Creates and returns a triangle with two faces."""
     mesh = dlfl_mesh.Mesh()
 
-    v_1, f_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
-    v_2, f_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
-    v_3, f_3 = operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
+    corner_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
+    corner_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
+    corner_3 = operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
 
-    f_4, _ = operators.insert_edge(mesh, v_1, f_1, v_2, f_2)
-    f_5, _ = operators.insert_edge(mesh, v_2, f_4, v_3, f_3)
-    _, _ = operators.insert_edge(mesh, v_3, f_5, v_1, f_5)
+    new_face_1, _ = operators.insert_edge(mesh, corner_1, corner_2)
+    new_face_2, _ = operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_1, corner_2.vertex_key),
+        corner_3,
+    )
+    operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_2, corner_3.vertex_key),
+        operators.corner_from_face_vertex(mesh, new_face_2, corner_1.vertex_key),
+    )
 
     return mesh
 
@@ -22,16 +30,36 @@ def tetrahedron():
     """Creates and returns a tetrahedron."""
     mesh = dlfl_mesh.Mesh()
 
-    v_1, f_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
-    v_2, f_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
-    v_3, f_3 = operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
-    v_4, f_4 = operators.create_point_sphere(mesh, (-1.0, -1.0, 1.0))
+    corner_1 = operators.create_point_sphere(mesh, (1.0, 1.0, 1.0))
+    corner_2 = operators.create_point_sphere(mesh, (1.0, -1.0, -1.0))
+    corner_3 = operators.create_point_sphere(mesh, (-1.0, 1.0, -1.0))
+    corner_4 = operators.create_point_sphere(mesh, (-1.0, -1.0, 1.0))
 
-    f_5, _ = operators.insert_edge(mesh, v_1, f_1, v_2, f_2)
-    f_6, _ = operators.insert_edge(mesh, v_2, f_5, v_3, f_3)
-    f_7, _ = operators.insert_edge(mesh, v_3, f_6, v_1, f_6)
-    f_9, _ = operators.insert_edge(mesh, v_1, f_7, v_4, f_4)
-    f_10, _ = operators.insert_edge(mesh, v_4, f_9, v_2, f_9)
-    _, _ = operators.insert_edge(mesh, v_4, f_10, v_3, f_10)
+    new_face_1, _ = operators.insert_edge(mesh, corner_1, corner_2)
+    new_face_2, _ = operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_1, corner_2.vertex_key),
+        corner_3,
+    )
+    new_face_3, _ = operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_2, corner_3.vertex_key),
+        operators.corner_from_face_vertex(mesh, new_face_2, corner_1.vertex_key),
+    )
+    new_face_4, _ = operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_3, corner_1.vertex_key),
+        corner_4,
+    )
+    new_face_5, _ = operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_4, corner_4.vertex_key),
+        operators.corner_from_face_vertex(mesh, new_face_4, corner_2.vertex_key),
+    )
+    operators.insert_edge(
+        mesh,
+        operators.corner_from_face_vertex(mesh, new_face_5, corner_4.vertex_key),
+        operators.corner_from_face_vertex(mesh, new_face_5, corner_3.vertex_key),
+    )
 
     return mesh

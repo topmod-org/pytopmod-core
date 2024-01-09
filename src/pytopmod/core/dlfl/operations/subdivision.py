@@ -7,51 +7,52 @@ from pytopmod.core.dlfl import operators
 from pytopmod.core.face import FaceKey
 from pytopmod.core.geometry import Point3D
 from pytopmod.core.vertex import VertexKey
+from pytopmod.core import corner
 
 
 def subdivide_edge(
-    mesh: dlfl_mesh.Mesh,
-    vertex_1_key: VertexKey,
-    face_1_key: FaceKey,
-    vertex_2_key: VertexKey,
-    face_2_key: FaceKey,
+    mesh: dlfl_mesh.Mesh, corner_1: corner.Corner, corner_2: corner.Corner
 ) -> Tuple[VertexKey, Tuple[FaceKey, FaceKey]]:
     """Subdivides an edge at its midpoint.
 
     Returns the vertex created at the midpoint and the new faces.
     """
     # Delete the old edge.
-    deletion_face_keys = operators.delete_edge(
-        mesh, vertex_1_key, face_1_key, vertex_2_key, face_2_key
-    )
+    deletion_face_1_key, _ = operators.delete_edge(mesh, corner_1, corner_2)
 
     # Create a point-sphere at the old edge's midpoint.
-    new_vertex_key, new_face_key = operators.create_point_sphere(
+    new_corner = operators.create_point_sphere(
         mesh,
         cast(
             Point3D,
             geometry.midpoint(
-                mesh.vertex_coordinates[vertex_1_key],
-                mesh.vertex_coordinates[vertex_2_key],
+                mesh.vertex_coordinates[corner_1.vertex_key],
+                mesh.vertex_coordinates[corner_2.vertex_key],
             ),
         ),
     )
 
     # Insert an edge from the first vertex to the midpoint.
     insertion_1_face_keys = operators.insert_edge(
-        mesh, vertex_1_key, deletion_face_keys[0], new_vertex_key, new_face_key
+        mesh,
+        operators.corner_from_face_vertex(
+            mesh, deletion_face_1_key, corner_1.vertex_key
+        ),
+        new_corner,
     )
 
     # Insert an edge from the midpoint to the second vertex.
     insertion_2_face_keys = operators.insert_edge(
         mesh,
-        new_vertex_key,
-        insertion_1_face_keys[0],
-        vertex_2_key,
-        insertion_1_face_keys[1],
+        operators.corner_from_face_vertex(
+            mesh, insertion_1_face_keys[0], new_corner.vertex_key
+        ),
+        operators.corner_from_face_vertex(
+            mesh, insertion_1_face_keys[1], corner_2.vertex_key
+        ),
     )
 
-    return (new_vertex_key, insertion_2_face_keys)
+    return (new_corner.vertex_key, insertion_2_face_keys)
 
 
 def triangulate_face(
@@ -65,7 +66,7 @@ def triangulate_face(
     face_vertex_keys = mesh.face_vertices[face_key]
 
     # Create a point sphere at the centroid of the face.
-    centroid_vertex, centroid_face = operators.create_point_sphere(
+    centroid_corner = operators.create_point_sphere(
         mesh,
         cast(
             Tuple[float, float, float],
@@ -77,7 +78,9 @@ def triangulate_face(
 
     # Insert an edge between a vertex picked from the face and the centroid.
     insert_face_key, _ = operators.insert_edge(
-        mesh, face_vertex_keys[0], face_key, centroid_vertex, centroid_face
+        mesh,
+        operators.corner_from_face_vertex(mesh, face_key, face_vertex_keys[0]),
+        centroid_corner,
     )
 
     insert_face_keys = []
@@ -85,7 +88,11 @@ def triangulate_face(
     for vertex_key in face_vertex_keys[1:]:
         insert_face_keys = list(
             operators.insert_edge(
-                mesh, vertex_key, insert_face_key, centroid_vertex, insert_face_key
+                mesh,
+                operators.corner_from_face_vertex(mesh, insert_face_key, vertex_key),
+                operators.corner_from_face_vertex(
+                    mesh, insert_face_key, centroid_corner.vertex_key
+                ),
             )
         )
         # Pick the face with the most vertices for the next insertion.
@@ -100,4 +107,4 @@ def triangulate_face(
 
     result_face_keys.update(insert_face_keys)
 
-    return (centroid_vertex, result_face_keys)
+    return (centroid_corner.vertex_key, result_face_keys)
