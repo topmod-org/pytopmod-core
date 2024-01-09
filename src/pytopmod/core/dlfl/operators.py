@@ -247,18 +247,23 @@ def _delete_edge_cofacial(
     new_face_2_key = mesh.create_face()
 
     # Compute the boundaries of the new faces as the boundary of the old face
-    # circulated to (vertex_1, vertex_2) and split at (vertex_2, vertex_1).
-    new_face_1_vertices, new_face_2_vertices = circular_list.split_at_pair(
-        circular_list.circulated_to_pair(
-            mesh.face_vertices[old_face_key], (vertex_1_key, vertex_2_key)
+    # circulated to vertex_2 and split at vertex_1.
+    new_face_1_vertices, new_face_2_vertices = circular_list.split_at_item(
+        circular_list.circulated_to_item(
+            mesh.face_vertices[old_face_key], vertex_2_key
         ),
-        (vertex_2_key, vertex_1_key),
+        vertex_1_key,
     )
 
     # Remove the last vertices from the created faces (i.e vertex_1 and
-    # vertex_2).
-    mesh.face_vertices[new_face_1_key] = new_face_1_vertices[:-1]
-    mesh.face_vertices[new_face_2_key] = new_face_2_vertices[:-1]
+    # vertex_2) if the faces are not point-spheres.
+    if len(new_face_1_vertices) > 1:
+        new_face_1_vertices.pop()
+    if len(new_face_2_vertices) > 1:
+        new_face_2_vertices.pop()
+
+    mesh.face_vertices[new_face_1_key] = new_face_1_vertices
+    mesh.face_vertices[new_face_2_key] = new_face_2_vertices
 
     # Update the vertices face rotations:
     for vertex_key in mesh.face_vertices[new_face_1_key]:
